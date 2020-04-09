@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#2C4E88</color>
+    <color name="colorAccent">#ffffff</color>
+    <color name="background">#5371b9</color>
+    <color name="cardViewBackground">#47619e</color>
+    <color name="white">#ffffff</color>
+    <color name="nav_background">#1a263e</color>
+    <color name="djidjd">#232f45</color>
+    <color name="BlueDarkHigh">#121d2f</color>
+    <color name="BlueDarkLow">#1a263e</color>
+    <color name="textSecondary">#DCDCDC</color>
+    <color name="little_grey">#C4C5C8</color>
+</resources>

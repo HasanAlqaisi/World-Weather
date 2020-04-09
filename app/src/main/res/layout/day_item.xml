@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/cardViewBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/day_week"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="sat"
+            android:textColor="@android:color/white"
+            android:textSize="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="O"
+            android:textColor="@android:color/white"
+            android:textSize="10dp"
+            app:layout_constraintStart_toEndOf="@+id/max_temp"
+            app:layout_constraintTop_toTopOf="@+id/max_temp" />
+
+        <TextView
+            android:id="@+id/max_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="22"
+            android:textColor="@android:color/white"
+            android:textSize="20dp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/description_week"
+            app:layout_constraintEnd_toStartOf="@+id/slash" />
+
+        <TextView
+            android:id="@+id/slash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="/"
+            android:textColor="@android:color/white"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/min_temp"
+            app:layout_constraintTop_toTopOf="@+id/max_temp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:text="O"
+            android:textColor="@android:color/white"
+            android:textSize="10dp"
+            app:layout_constraintStart_toEndOf="@+id/min_temp"
+            app:layout_constraintTop_toTopOf="@+id/min_temp" />
+
+        <TextView
+            android:id="@+id/min_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="10"
+            android:textColor="@android:color/white"
+            android:textSize="20dp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/max_temp"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/date_week"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="31/1"
+            android:textColor="@color/textSecondary"
+            app:layout_constraintStart_toStartOf="@+id/day_week"
+            app:layout_constraintTop_toBottomOf="@+id/day_week" />
+
+        <ImageView
+            android:id="@+id/image_week"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            app:layout_constraintEnd_toStartOf="@+id/guideline3"
+            app:layout_constraintTop_toTopOf="@+id/day_week"
+            app:srcCompat="@drawable/a01n" />
+
+        <TextView
+            android:id="@+id/description_week"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="Description"
+            android:textColor="@color/textSecondary"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/max_temp"
+            app:layout_constraintStart_toEndOf="@+id/image_week"
+            app:layout_constraintTop_toTopOf="@+id/image_week" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.33" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

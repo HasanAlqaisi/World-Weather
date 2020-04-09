@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/locationFragment"
+        android:icon="@drawable/ic_location"
+        android:title="Locations" />
+    <group
+        android:id="@+id/group1">
+        <item
+            android:id="@+id/notifaction_item"
+            android:icon="@drawable/ic_notifications"
+            android:title="Notification Bar" />
+        <item
+            android:id="@+id/temp_unit_item"
+            android:icon="@drawable/ic_ac_unit"
+            android:title="Temperature Unit" />
+        <item
+            android:id="@+id/rate_item"
+            android:icon="@drawable/ic_star"
+            android:title="Rate Me" />
+        <item
+            android:id="@+id/version_item"
+            android:icon="@drawable/ic_version"
+            android:title="Version" />
+    </group>
+</menu>

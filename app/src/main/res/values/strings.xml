@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">World Weather</string>
+
+    <string name="error_general">Something Went Wrong!</string>
+    <string name="error_no_internet">No Internet Connection!</string>
+    <string name="error_location_off">Please turn on Location!</string>
+    <string name="error_city_name">The city name is not correct</string>
+
+    <string name="enable_location_permission">Please enable the location permission!</string>
+    <string name="enable_gps">Please enable GPS!</string>
+    <string name="settings">Settings</string>
+    <string name="temp_unit">Temperature Unit</string>
+    <string name="locations_title">Locations</string>
+    <string name="wind_speed">%1$d ms</string>
+    <string name="precip">%1$f %%</string>
+    <string name="feels_like">Feels like %1$d</string>
+
+    <string name="location_not_specified">We couldn\'t specify your location!</string>
+    <string name="instead_enter_city">Instead, enter a name of a city"</string>
+    <string name="enter_city">Enter a name of a city"</string>
+    <string name="ex_baghdad">ex: Baghdad</string>
+    <string name="ok">Ok</string>
+</resources>
