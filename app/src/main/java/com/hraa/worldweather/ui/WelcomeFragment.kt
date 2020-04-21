@@ -169,7 +169,9 @@ class WelcomeFragment : Fragment(), TextWatcher {
 
     private fun observeWeatherState() {
         weatherViewModel.weatherResult.observe(viewLifecycleOwner, Observer { weatherState ->
+            Log.e("TAG", "Weather result is $weatherState")
             weatherState?.let {
+                Log.e("TAG", "weather state is NOT null")
                 when (weatherState.name) {
                     WeatherResultState.FINISHED.toString() -> {
                         Log.e("TAG", "Finished!")

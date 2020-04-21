@@ -51,8 +51,6 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
 
     private var sixteenForecastList: List<Data> = emptyList()
 
-    private lateinit var serviceIntent: Intent
-
     private lateinit var okBtn: Button
     private lateinit var closeDialog: ImageView
     private lateinit var cityNameEditText: EditText
@@ -314,30 +312,35 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
                 Log.e("TAG", "Switch checked and location available")
                 val cal = Calendar.getInstance()
 
-                serviceIntent = Intent(requireContext(), NotificationService::class.java)
-                serviceIntent.putExtra("units", units)
-                serviceIntent.putExtra("cityName", lastLocation)
-
                 val alarmManager =
-                    requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
                 val pendingIntent =
                     PendingIntent.getService(
                         requireContext(),
                         0,
-                        serviceIntent,
+                        Intent(requireActivity(), NotificationService::class.java).apply {
+                            putExtra("units", units)
+                            putExtra("cityName", lastLocation)
+                        },
                         PendingIntent.FLAG_UPDATE_CURRENT
                     )
 
-                alarmManager.setRepeating(
-                    AlarmManager.RTC_WAKEUP,
-                    cal.timeInMillis,
-                    3600000,
-                    pendingIntent
-                )
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
             }
         } else {
             Log.e("TAG", "Switch is turned off")
+            val alarmManager =
+                requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+            alarmManager.cancel(
+                PendingIntent.getService(
+                    requireContext(),
+                    0,
+                    Intent(requireContext(), NotificationService::class.java),
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
             requireContext().stopService(Intent(requireContext(), NotificationService::class.java))
         }
     }

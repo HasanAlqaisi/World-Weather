@@ -1,5 +1,6 @@
 package com.hraa.worldweather.services
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -35,6 +36,23 @@ class NotificationService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.e("TAG", "onStartCommand called")
 
+        val inten = Intent(this, NotificationService::class.java).apply {
+            putExtra(
+                "units", intent?.extras?.getString("units")
+            )
+            putExtra(
+                "cityName", intent?.extras?.getString("cityName")
+            )
+        }
+        val pendingInten =
+            PendingIntent.getService(this, 0, inten, PendingIntent.FLAG_UPDATE_CURRENT)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.setExact(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + 3600 * 1000,
+            pendingInten
+        )
+
         intent?.let { i ->
 
             val notifIntent = Intent(this, MainActivity::class.java)
@@ -48,7 +66,7 @@ class NotificationService : Service() {
 
             val builder = NotificationCompat.Builder(this, "20")
                 .setSmallIcon(R.drawable.ic_sun)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 // Set the intent that will fire when the user taps the notification
                 .setContentIntent(pendingIntent)
 
