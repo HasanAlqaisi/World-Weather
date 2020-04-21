@@ -1,13 +1,18 @@
 package com.hraa.worldweather.ui
 
+import android.app.AlarmManager
 import android.app.AlertDialog
 import android.app.Dialog
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -20,9 +25,11 @@ import com.hraa.worldweather.R
 import com.hraa.worldweather.adapter.ForecastAdapter
 import com.hraa.worldweather.constants.*
 import com.hraa.worldweather.enums.WeatherResultState
+import com.hraa.worldweather.services.NotificationService
 import com.hraa.worldweather.sixteen_weather_model.Data
 import com.hraa.worldweather.view_model.WeatherViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
+import java.util.*
 
 class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
     NavigationView.OnNavigationItemSelectedListener, TextWatcher {
@@ -34,6 +41,7 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
     private val dialog by lazy { Dialog(this.requireContext()) }
     private var isDialogShowing = false
 
+
     private val sharedPref by lazy {
         activity?.getSharedPreferences(
             SHARED_PREFERENCES_NAME,
@@ -43,12 +51,16 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
 
     private var sixteenForecastList: List<Data> = emptyList()
 
+    private lateinit var serviceIntent: Intent
+
     private lateinit var okBtn: Button
     private lateinit var closeDialog: ImageView
     private lateinit var cityNameEditText: EditText
 
     private lateinit var units: String
     private lateinit var tempUnitText: TextView
+
+    private lateinit var switchNotif: Switch
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,7 +92,16 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
         //Get units from sharedpref
         units = sharedPref?.getString(UNITS_SHARED_PREF, "M")!!
         //Get item one and put the view for it
-        nav_view.menu.getItem(1).setActionView(R.layout.notification_nav_item)
+        switchNotif =
+            nav_view.menu.getItem(1)
+                .setActionView(R.layout.notification_nav_item).actionView.findViewById(R.id.notif_switch)
+        switchNotif.isChecked = sharedPref!!.getBoolean("isSwitchChecked", false)
+
+        switchNotif.setOnCheckedChangeListener { buttonView, isChecked ->
+            sharedPref?.edit()?.putBoolean("isSwitchChecked", isChecked)?.apply()
+            if (buttonView.isPressed)
+                switchStateHandling(isChecked)
+        }
         //Get item two and put the view for it
         val tempView = nav_view.menu.getItem(2).setActionView(R.layout.temp_nav_item).actionView
         //Get the child view from parent
@@ -108,7 +129,10 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
         setRecycler()
 
         refresh_weather.setOnRefreshListener {
-            weatherViewModel.getWeatherByCityName(weatherViewModel.lastLocation.value!!, units)
+            weatherViewModel.getWeatherByCityName(
+                weatherViewModel.lastLocation.value!!,
+                units
+            )
         }
     }
 
@@ -264,9 +288,58 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
                 }
                 alertDialog.create().show()
             }
+
             R.id.locationFragment -> findNavController().navigate(R.id.action_mainFragment_to_locationFragment)
+
+            R.id.notification_item -> {
+                Log.e("TAG", "notification item clicked")
+
+                switchNotif.isChecked = !switchNotif.isChecked
+
+                switchStateHandling(switchNotif.isChecked)
+            }
         }
         return true
+    }
+
+    private fun switchStateHandling(isChecked: Boolean) {
+        if (isChecked) {
+            Log.e("TAG", "Switch is turned on")
+            val lastLocation = requireContext().getSharedPreferences(
+                SHARED_PREFERENCES_NAME,
+                Context.MODE_PRIVATE
+            )
+                .getString(LAST_LOCATION_SHARED_PREF, null)
+            if (!lastLocation.isNullOrEmpty()) {
+                Log.e("TAG", "Switch checked and location available")
+                val cal = Calendar.getInstance()
+
+                serviceIntent = Intent(requireContext(), NotificationService::class.java)
+                serviceIntent.putExtra("units", units)
+                serviceIntent.putExtra("cityName", lastLocation)
+
+                val alarmManager =
+                    requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+                val pendingIntent =
+                    PendingIntent.getService(
+                        requireContext(),
+                        0,
+                        serviceIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+
+                alarmManager.setRepeating(
+                    AlarmManager.RTC_WAKEUP,
+                    cal.timeInMillis,
+                    3600000,
+                    pendingIntent
+                )
+            }
+        } else {
+            Log.e("TAG", "Switch is turned off")
+            requireContext().stopService(Intent(requireContext(), NotificationService::class.java))
+        }
     }
 
     override fun afterTextChanged(s: Editable?) {
