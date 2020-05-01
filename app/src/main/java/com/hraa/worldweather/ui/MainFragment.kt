@@ -25,6 +25,7 @@ import com.hraa.worldweather.R
 import com.hraa.worldweather.adapter.ForecastAdapter
 import com.hraa.worldweather.constants.*
 import com.hraa.worldweather.enums.WeatherResultState
+import com.hraa.worldweather.services.NotificationReceiver
 import com.hraa.worldweather.services.NotificationService
 import com.hraa.worldweather.sixteen_weather_model.Data
 import com.hraa.worldweather.view_model.WeatherViewModel
@@ -316,12 +317,13 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
                     requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
                 val pendingIntent =
-                    PendingIntent.getService(
-                        requireContext(),
+                    PendingIntent.getBroadcast(
+                        activity?.applicationContext,
                         0,
-                        Intent(requireActivity(), NotificationService::class.java).apply {
+                        Intent(requireActivity(), NotificationReceiver::class.java).apply {
                             putExtra("units", units)
                             putExtra("cityName", lastLocation)
+                            action = "com.hraa.worldweather.alarm.alerted"
                         },
                         PendingIntent.FLAG_UPDATE_CURRENT
                     )
@@ -333,15 +335,18 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
             val alarmManager =
                 requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+            val inten = Intent(activity?.applicationContext, NotificationReceiver::class.java).apply {
+                action = "com.hraa.worldweather.alarm.alerted"
+            }
+
             alarmManager.cancel(
-                PendingIntent.getService(
-                    requireContext(),
+                PendingIntent.getBroadcast(
+                    activity?.applicationContext,
                     0,
-                    Intent(requireContext(), NotificationService::class.java),
+                    inten,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
             )
-            requireContext().stopService(Intent(requireContext(), NotificationService::class.java))
         }
     }
 
