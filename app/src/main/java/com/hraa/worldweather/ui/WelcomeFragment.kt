@@ -169,12 +169,12 @@ class WelcomeFragment : Fragment(), TextWatcher {
 
     private fun observeWeatherState() {
         weatherViewModel.weatherResult.observe(viewLifecycleOwner, Observer { weatherState ->
-            Log.e("TAG", "Weather result is $weatherState")
+            Log.e("WelcomeFragment", "Weather result is $weatherState")
             weatherState?.let {
-                Log.e("TAG", "weather state is NOT null")
+                Log.e("WelcomeFragment", "weather state is NOT null")
                 when (weatherState.name) {
                     WeatherResultState.FINISHED.toString() -> {
-                        Log.e("TAG", "Finished!")
+                        Log.e("WelcomeFragment", "Finished!")
                         findNavController().navigate(R.id.action_welcomeFragment_to_mainFragment)
                         if (dialog.isShowing) {
                             dialog.dismiss()

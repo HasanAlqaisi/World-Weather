@@ -72,6 +72,8 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Log.e("MainFragment", "current weather livedata is ${weatherViewModel.currentWeather.value}")
+
         if (savedInstanceState != null) {
             // Check if dialog was showing, If so.. show it.. else dismiss it
             isDialogShowing = savedInstanceState.getBoolean(IS_DIALOG_SHOWING_KEY)
@@ -115,6 +117,10 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
         //Get item four and put the view for it
         nav_view.menu.getItem(4).setActionView(R.layout.version_nav_item)
 
+        //Saving the showed location as the last one!
+        sharedPref?.edit()
+            ?.putString(LAST_LOCATION_SHARED_PREF, weatherViewModel.lastLocation.value)?.apply()
+
         setDialog()
         //Listen to text changes
         cityNameEditText.addTextChangedListener(this)
@@ -140,11 +146,11 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
         outState.putBoolean(IS_DIALOG_SHOWING_KEY, isDialogShowing)
     }
 
-    override fun onStop() {
-        super.onStop()
-        sharedPref?.edit()
-            ?.putString(LAST_LOCATION_SHARED_PREF, weatherViewModel.lastLocation.value)?.apply()
-    }
+//    override fun onStop() {
+//        super.onStop()
+//        sharedPref?.edit()
+//            ?.putString(LAST_LOCATION_SHARED_PREF, weatherViewModel.lastLocation.value)?.apply()
+//    }
 
     private fun setDialog() {
         dialog.setContentView(R.layout.dialog_entering_city)
@@ -291,7 +297,7 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
             R.id.locationFragment -> findNavController().navigate(R.id.action_mainFragment_to_locationFragment)
 
             R.id.notification_item -> {
-                Log.e("TAG", "notification item clicked")
+                Log.e("MainFragment", "notification item clicked")
 
                 switchNotif.isChecked = !switchNotif.isChecked
 
@@ -303,14 +309,14 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
 
     private fun switchStateHandling(isChecked: Boolean) {
         if (isChecked) {
-            Log.e("TAG", "Switch is turned on")
+            Log.e("MainFragment", "Switch is turned on")
             val lastLocation = requireContext().getSharedPreferences(
                 SHARED_PREFERENCES_NAME,
                 Context.MODE_PRIVATE
             )
                 .getString(LAST_LOCATION_SHARED_PREF, null)
             if (!lastLocation.isNullOrEmpty()) {
-                Log.e("TAG", "Switch checked and location available")
+                Log.e("MainFragment", "Switch checked and location available")
                 val cal = Calendar.getInstance()
 
                 val alarmManager =
@@ -331,7 +337,7 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
             }
         } else {
-            Log.e("TAG", "Switch is turned off")
+            Log.e("MainFragment", "Switch is turned off")
             val alarmManager =
                 requireActivity().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
