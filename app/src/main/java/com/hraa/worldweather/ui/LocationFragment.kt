@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
@@ -72,7 +73,8 @@ class LocationFragment : Fragment(), LocationsAdapter.OnLocationClick {
     }
 
     private fun observeLocations() {
-        locationsViewModel.locations.observeOnce(viewLifecycleOwner, Observer { location ->
+        locationsViewModel.locations.observe(viewLifecycleOwner, Observer { location ->
+            Log.e("LocationFragment", "location value is $location")
             if (location != null) {
                 dataArray.add(HeaderLocation("Current location"))
 
@@ -96,6 +98,7 @@ class LocationFragment : Fragment(), LocationsAdapter.OnLocationClick {
                 }
 
                 locationsAdapter.setData(dataArray)
+                locationsViewModel.onFinishObserveLocations()
             }
         })
     }

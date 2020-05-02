@@ -186,10 +186,12 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
                     WeatherResultState.NO_INTERNET.toString() -> {
                         okBtn.isEnabled = true
                         this.requireContext().toast(resources.getString(R.string.error_no_internet))
+                        weatherViewModel.onFinishWeatherResult()
                     }
 
                     WeatherResultState.WRONG_CITY_NAME.toString() -> {
                         cityNameEditText.error = resources.getString(R.string.error_city_name)
+                        weatherViewModel.onFinishWeatherResult()
                     }
                     WeatherResultState.FINISHED.toString() -> {
                         if (dialog.isShowing) {
@@ -197,15 +199,16 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
                             isDialogShowing = false
                         }
                         refresh_weather.isRefreshing = false
+                        weatherViewModel.onFinishWeatherResult()
                     }
                     WeatherResultState.EXCEPTION.toString() -> {
                         this.requireContext().toast(resources.getString(R.string.error_general))
                         refresh_weather.isRefreshing = false
+                        weatherViewModel.onFinishWeatherResult()
                     }
                 }
             }
         })
-        weatherViewModel.onFinishWeatherResult()
     }
 
     private fun observeCurrentWeather() {
@@ -230,7 +233,7 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
             } else {
                 Toast.makeText(
                     this.requireContext(),
-                    currentWeather.toString(),
+                    "Please refresh the page...",
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -248,7 +251,7 @@ class MainFragment : Fragment(), ForecastAdapter.OnDayItemClick,
         weatherViewModel.sixteenDaysForecast.observe(
             viewLifecycleOwner,
             Observer { sixteenForecast ->
-                if (sixteenForecast != null) {
+                if (!sixteenForecast.data.isNullOrEmpty()) {
                     sixteenForecastList = sixteenForecast.data
                     recyclerAdapter.setData(sixteenForecast)
                 } else {

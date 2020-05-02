@@ -47,13 +47,17 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     val weatherResult: LiveData<WeatherResultState>
         get() = _weatherResult
 
-    private val _locations = MutableLiveData<List<Data>?>()
-    val locations: LiveData<List<Data>?>
+    private val _locations = MutableLiveData<List<Data>>()
+    val locations: LiveData<List<Data>>
         get() = _locations
 
     private val _latitude = MutableLiveData<Long>()
     private val _longitude = MutableLiveData<Long>()
     val lastLocation = MutableLiveData<String>()
+
+    fun onFinishObserveLocations(){
+        _locations.value = null
+    }
 
     fun onFinishWeatherResult() {
         _weatherResult.value = null
