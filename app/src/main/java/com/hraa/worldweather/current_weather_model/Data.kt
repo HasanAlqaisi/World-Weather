@@ -10,25 +10,26 @@ import com.hraa.worldweather.constants.CURRENT_WEATHER_TABLE
 @Entity(tableName = CURRENT_WEATHER_TABLE)
 data class Data(
     @SerializedName("app_temp")
-    val appTemp: Double,
+    val appTemp: Double?,
     @SerializedName("city_name")
     @PrimaryKey val cityName: String,
-    val datetime: String,
-    val pres: Double,
-    val sunrise: String,
-    val sunset: String,
-    val temp: Double,
-    val uv: Double,
-    val vis: Double,
-    val weather: Weather,
+    val datetime: String?,
+    val pres: Double?,
+    val sunrise: String?,
+    val sunset: String?,
+    val temp: Double?,
+    val uv: Double?,
+    val vis: Double?,
+    val weather: Weather?,
     @SerializedName("wind_cdir")
-    val windCdir: String,
+    val windCdir: String?,
     @SerializedName("wind_spd")
-    val windSpd: Double,
-    val lat: String,
-    val lon: String,
-    var isCurrentLocation: Boolean? = false,
-    var units: String
+    val windSpd: Double?,
+    val lat: String?,
+    val lon: String?,
+//    var isCurrentLocation: Boolean? = false,
+    var isCurrentLocation: Boolean,
+    var units: String?
 )
 
 class WeatherConverter {

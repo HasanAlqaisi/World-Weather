@@ -19,6 +19,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/locations_recycler"
+        tools:listitem="@layout/header_item"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"

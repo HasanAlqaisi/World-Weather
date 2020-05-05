@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
@@ -47,19 +46,18 @@ class LocationFragment : Fragment(), LocationsAdapter.OnLocationClick {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_location, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Setting up the tool bar
         val navController = findNavController()
         val appBarConfiguration = AppBarConfiguration(navController.graph)
         location_toolbar.setupWithNavController(navController, appBarConfiguration)
         location_toolbar.title = resources.getString(R.string.locations_title)
 
-        Log.e("TAG", "onCreateCalled -> Getting all locations")
         locationsViewModel.getAllLocations()
 
         locations_recycler.apply {
@@ -68,31 +66,31 @@ class LocationFragment : Fragment(), LocationsAdapter.OnLocationClick {
         }
 
         observeLocations()
-
         observeWeatherResult()
     }
 
     private fun observeLocations() {
         locationsViewModel.locations.observe(viewLifecycleOwner, Observer { location ->
-            Log.e("LocationFragment", "location value is $location")
             if (location != null) {
+                progress_location.visibility = View.GONE
+
                 dataArray.add(HeaderLocation("Current location"))
 
                 location.forEach { locationState ->
-                    if (locationState.isCurrentLocation != null && locationState.isCurrentLocation!!) {
+                    if (locationState.isCurrentLocation) {
                         dataArray.add(LocationName(locationState.cityName))
                     }
                 }
 
                 for (locationState in location) {
-                    if (locationState.isCurrentLocation == false) {
+                    if (!locationState.isCurrentLocation) {
                         dataArray.add(HeaderLocation("Other locations"))
                         break
                     }
                 }
 
                 location.forEach { locationState ->
-                    if (locationState.isCurrentLocation == false) {
+                    if (!locationState.isCurrentLocation) {
                         dataArray.add(LocationName(locationState.cityName))
                     }
                 }
@@ -103,14 +101,21 @@ class LocationFragment : Fragment(), LocationsAdapter.OnLocationClick {
         })
     }
 
-    override fun onClick(position: Int?, cityName: String?) {
+    override fun onClick(position: Int?, cityName: String?, shouldDelete: Boolean) {
         if (position != null) {
             val units = sharedPref?.getString(UNITS_SHARED_PREF, "M")!!
-            if (cityName != null) {
-                Log.e("LocationFragment", "City name clicked -> Fetching data!")
+            if (cityName != null && !shouldDelete) {
+                //City name clicked
                 progress_location.visibility = View.VISIBLE
                 locationsViewModel.getWeatherByCityName(cityName, units)
+            } else if (cityName != null && shouldDelete) {
+                // Delete icon clicked
+                progress_location.visibility = View.VISIBLE
+                dataArray.clear()
+                locationsViewModel.deleteWeatherLocation(cityName)
+                locationsViewModel.getAllLocations()
             } else {
+                // Detect required by the user
                 progress_location.visibility = View.VISIBLE
                 if (ContextCompat.checkSelfPermission(this.requireContext(), LOCATION_PERMISSION)
                     == PackageManager.PERMISSION_GRANTED
@@ -144,6 +149,7 @@ class LocationFragment : Fragment(), LocationsAdapter.OnLocationClick {
                         this.requireContext().toast(resources.getString(R.string.error_general))
                     }
                     WeatherResultState.NO_INTERNET.toString() -> {
+                        progress_location.visibility = View.GONE
                         this.requireContext().toast(resources.getString(R.string.error_no_internet))
                     }
                     WeatherResultState.LOCATION_IS_OFF.toString() -> {
@@ -154,9 +160,9 @@ class LocationFragment : Fragment(), LocationsAdapter.OnLocationClick {
                         )
                     }
                 }
+                locationsViewModel.onFinishWeatherResult()
             }
         })
-        locationsViewModel.onFinishWeatherResult()
     }
 
     private fun enableLocationSnackBar(message: String, intent: Intent) {

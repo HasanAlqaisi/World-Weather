@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.hraa.worldweather.current_weather_model.Data
 import com.hraa.worldweather.current_weather_model.WeatherConverter
-import com.hraa.worldweather.sixteen_weather_model.DataConverter
-import com.hraa.worldweather.sixteen_weather_model.SixteenWeatherModel
+import com.hraa.worldweather.forecast_weather_model.DataConverter
+import com.hraa.worldweather.forecast_weather_model.ForecastWeatherModel
 
 @Database(
-    entities = [Data::class, SixteenWeatherModel::class],
+    entities = [Data::class, ForecastWeatherModel::class],
     version = 1,
     exportSchema = false
 )

@@ -8,14 +8,14 @@ import retrofit2.http.Query
 interface CurrentWeatherApi {
 
     @GET("current?key=$API_KEY")
-    suspend fun getCurrentWeatherLatLon(
+    suspend fun getCurrentWeatherByLocation(
         @Query("lat") latitude: Long,
         @Query("lon") longitude: Long,
         @Query("units") units: String
     ): CurrentWeatherModel
 
     @GET("current?key=$API_KEY")
-    suspend fun getCurrentWeatherCityName(
+    suspend fun getCurrentWeatherByCityName(
         @Query("city") cityName: String,
         @Query("units") units: String
     ): CurrentWeatherModel

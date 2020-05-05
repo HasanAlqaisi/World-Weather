@@ -92,7 +92,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="00"
+                    android:text="00°"
                     android:textColor="@android:color/white"
                     android:textSize="55dp"
                     android:textStyle="italic"
@@ -100,21 +100,11 @@
                     app:layout_constraintTop_toBottomOf="@+id/description" />
 
                 <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="o"
-                    android:textColor="@android:color/white"
-                    android:textSize="30dp"
-                    app:layout_constraintStart_toEndOf="@+id/temp_txt"
-                    app:layout_constraintTop_toTopOf="@+id/temp_txt" />
-
-                <TextView
                     android:id="@+id/temp_app_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Feels like 00"
+                    android:text="Feels like 00°"
                     android:textColor="@android:color/white"
                     android:textSize="20dp"
                     app:layout_constraintStart_toStartOf="@+id/temp_txt"
@@ -172,12 +162,11 @@
                     android:id="@+id/units_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:text="C"
-                    android:textColor="@android:color/white"
+                    android:theme="@style/WhiteBoldTextView"
                     android:textSize="20dp"
-                    app:layout_constraintStart_toEndOf="@+id/textView"
-                    app:layout_constraintTop_toBottomOf="@+id/textView" />
+                    app:layout_constraintBottom_toBottomOf="@+id/temp_txt"
+                    app:layout_constraintStart_toEndOf="@+id/temp_txt" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

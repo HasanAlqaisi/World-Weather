@@ -124,22 +124,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
-                    android:text="00"
+                    android:text="00°"
                     android:textColor="@android:color/white"
                     android:textSize="30dp"
                     app:layout_constraintEnd_toStartOf="@+id/guideline4"
                     app:layout_constraintTop_toTopOf="@+id/sunrise_img" />
-
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="o"
-                    android:textColor="@android:color/white"
-                    android:textSize="10dp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toEndOf="@+id/max_temp_day_txt"
-                    app:layout_constraintTop_toTopOf="@+id/max_temp_day_txt" />
 
                 <ImageView
                     android:id="@+id/imageView2"
@@ -154,22 +143,11 @@
                     android:id="@+id/min_temp_day_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="00"
+                    android:text="00°"
                     android:textColor="@android:color/white"
                     android:textSize="30dp"
                     app:layout_constraintStart_toEndOf="@+id/imageView2"
                     app:layout_constraintTop_toTopOf="@+id/max_temp_day_txt" />
-
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="o"
-                    android:textColor="@android:color/white"
-                    android:textSize="10dp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toEndOf="@+id/min_temp_day_txt"
-                    app:layout_constraintTop_toTopOf="@+id/min_temp_day_txt" />
 
                 <TextView
                     android:id="@+id/description_details_txt"

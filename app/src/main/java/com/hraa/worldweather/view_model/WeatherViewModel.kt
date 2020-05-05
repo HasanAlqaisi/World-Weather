@@ -10,14 +10,13 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.LocationServices
 import com.hraa.worldweather.current_weather_model.Data
 import com.hraa.worldweather.enums.WeatherResultState
+import com.hraa.worldweather.forecast_weather_model.ForecastWeatherModel
 import com.hraa.worldweather.repo.Repository
 import com.hraa.worldweather.room.WeatherDatabase
-import com.hraa.worldweather.sixteen_weather_model.SixteenWeatherModel
 import kotlinx.coroutines.*
 import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: Repository
@@ -33,10 +32,10 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         LocationServices.getFusedLocationProviderClient(application)
     }
 
-    private val _sixteenDaysForecast = MutableLiveData<SixteenWeatherModel>()
+    private val _weatherForecast = MutableLiveData<ForecastWeatherModel>()
 
-    val sixteenDaysForecast: LiveData<SixteenWeatherModel>
-        get() = _sixteenDaysForecast
+    val weatherForecast: LiveData<ForecastWeatherModel>
+        get() = _weatherForecast
 
     private val _currentWeather = MutableLiveData<List<Data>>()
 
@@ -51,11 +50,9 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     val locations: LiveData<List<Data>>
         get() = _locations
 
-    private val _latitude = MutableLiveData<Long>()
-    private val _longitude = MutableLiveData<Long>()
     val lastLocation = MutableLiveData<String>()
 
-    fun onFinishObserveLocations(){
+    fun onFinishObserveLocations() {
         _locations.value = null
     }
 
@@ -65,20 +62,17 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
 
     fun getAllLocations() {
         viewModelScope.launch(Dispatchers.IO) {
-            _locations.postValue(repository.getAllLocations())
+            _locations.postValue(repository.getAllLocationsFromRoom())
         }
     }
 
     fun getWeatherByLocation(units: String) {
         locationProvider.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
-                //Save lat and lon in liveData
-                _latitude.value = location.latitude.toLong()
-                _longitude.value = location.longitude.toLong()
-                //Save it again in vals so we can deal with them
+                // Save latitude and longitude again in val so we can deal with them
                 val latitude = location.latitude.toLong()
                 val longitude = location.longitude.toLong()
-                //Handler for parentJob
+                // Handler for parentJob
                 val handler = CoroutineExceptionHandler { _, exception ->
                     when (exception.cause) {
                         is UnknownHostException -> {
@@ -97,7 +91,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 val parentJob = viewModelScope.launch(Dispatchers.IO + handler) {
 
                     val currentWeatherJob = launch {
-                        getCurrentWeatherByCoordinates(latitude, longitude, units)
+                        getCurrentWeatherByLocation(latitude, longitude, units)
                     }
 
                     currentWeatherJob.invokeOnCompletion {
@@ -106,11 +100,11 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                         }
                     }
 
-                    val sixteenWeatherJob = launch {
-                        getSixteenWeatherByCoordinates(latitude, longitude, units)
+                    val forecastWeatherJob = launch {
+                        getWeatherForecastByLocation(latitude, longitude, units)
                     }
 
-                    sixteenWeatherJob.invokeOnCompletion {
+                    forecastWeatherJob.invokeOnCompletion {
                         it?.let { throwable ->
                             throw throwable
                         }
@@ -128,12 +122,11 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 _weatherResult.postValue(WeatherResultState.LOCATION_IS_OFF)
             }
         }
-
     }
 
-    fun getAllCitiesAvailableFromRoomAsync(): Deferred<String?> {
-        return viewModelScope.async(Dispatchers.IO) {
-            repository.getAllCitiesAvailable()
+    suspend fun isCitiesInRoomNull(): Boolean {
+        return withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
+            repository.getAllLocationsFromRoom().isNullOrEmpty()
         }
     }
 
@@ -158,9 +151,16 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun getWeatherByCityName(city: String, units: String) {
+
+        Log.e("TAG", "getWeatherByCityName called")
+
+        // Assume this calling as last location
+        lastLocation.postValue(city)
+
         val handler = CoroutineExceptionHandler { _, exception ->
             when (exception.cause) {
                 is UnknownHostException -> {
+                    getInfoFromRoom(city)
                     _weatherResult.postValue(WeatherResultState.NO_INTERNET)
                 }
                 is NullPointerException -> {
@@ -173,6 +173,8 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 else -> {
                     Log.e("TAG", "ERROR exception -> ${exception.cause}")
                     if (exception.cause != null) {
+                        Log.e("TAG", "General exception is NOT null")
+                        getInfoFromRoom(city)
                         _weatherResult.postValue(WeatherResultState.EXCEPTION)
                     }
                 }
@@ -181,122 +183,142 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
 
         val parentJob = viewModelScope.launch(Dispatchers.IO + handler) {
 
-            //Get current weather from api by city name
+            Log.e("TAG", "parentJob Accessed")
+
+            // Get current weather from api by city name
             val currentWeatherJob = launch {
-                val currentWeather = repository.getCurrentWeatherCityNameFromApi(city, units)
+                Log.e("TAG", "currentWeatherJob Accessed")
+                val currentWeather = repository.getCurrentWeatherByCityNameFromApi(city, units)
 
-                //Insert units manually (Because it's not returned from the api)
-                //And check the given city if it is a current location or not! (in database)
+                // Insert units manually (Because it's not returned from the api)
+                // And check the given city if it is a current location or not! (in database)
                 currentWeather.data[0].units = units
-                val isCurrent = getIsCurrentLocation(city)
-                currentWeather.data[0].isCurrentLocation = isCurrent != null && isCurrent
+                currentWeather.data[0].isCurrentLocation =
+                    repository.isCurrentLocation(currentWeather.data[0].cityName) ?: false
 
-                //Insert data to database
-                repository.insertCurrentWeather(currentWeather.data)
+                // Insert data to database
+                repository.insertCurrentWeatherToRoom(currentWeather.data)
 
-                //Getting data from database
+                // Getting data from database
                 _currentWeather.postValue(
                     repository.getCurrentWeatherByCityNameFromRoom(
                         currentWeather.data[0].cityName
                     )
                 )
             }
-            //When currentWeatherJob Completed check if there's an exception and throw it if so
-            //If the operation success.. save the city name as last location for the user
+            // When currentWeatherJob Completed check if there's an exception and throw it if so
+            // If the operation success.. save the city name as last location for the user
             currentWeatherJob.invokeOnCompletion {
                 it?.let { throwable ->
                     throw throwable
                 }
-                if (it == null) {
-                    //Assume this calling as last location
-                    lastLocation.postValue(city)
-                }
             }
 
-            val sixteenForecastJob = launch {
-                //Get sixteen days forecast from api by city name
-                val sixteenWeather = repository.getSixteenDaysForecastCityNameFromApi(city, units)
+            val forecastWeatherJob = launch {
 
-                //Insert data to database
-                repository.insertSixteenWeather(sixteenWeather)
+                Log.e("TAG", "forecastWeatherJob Accessed")
 
-                //Getting data from database
-                _sixteenDaysForecast.postValue(
-                    repository.getSixteenWeatherByCityNameFromRoom(
-                        sixteenWeather.cityName
+                // Get sixteen days forecast from api by city name
+                val forecastWeather = repository.getWeatherForecastByCityNameFromApi(city, units)
+
+                // Insert data to database
+                repository.insertForecastWeatherToRoom(forecastWeather)
+
+                // Getting data from database
+                _weatherForecast.postValue(
+                    repository.getWeatherForecastByCityNameFromRoom(
+                        forecastWeather.cityName
                     )
                 )
             }
 
-            sixteenForecastJob.invokeOnCompletion {
+            forecastWeatherJob.invokeOnCompletion {
                 it?.let { throwable ->
                     throw throwable
                 }
             }
         }
-        //When parentJob completed.. if no exception consider the operation finished
+        // When parentJob completed.. if no exception consider the operation finished
         parentJob.invokeOnCompletion {
             if (it == null) {
+                Log.e("TAG", "Parent job Finished!")
                 _weatherResult.postValue(WeatherResultState.FINISHED)
+            } else {
+                Log.e("TAG", "Parent job FAILED!")
             }
         }
     }
 
-    private suspend fun getCurrentWeatherByCoordinates(
-        latitude: Long,
-        longitude: Long,
-        units: String
-    ) { //Get current weather from api by Coordinates
-        val currentWeather =
-            repository.getCurrentWeatherLatLonFromApi(latitude, longitude, units)
-
-        //Assume this calling as last location
-        lastLocation.postValue(currentWeather.data[0].cityName)
-
-        //Insert units manually (Because it's not returned from the api)
-        currentWeather.data[0].units = units
-        currentWeather.data[0].isCurrentLocation = true
-
-        //Insert data to database
-        repository.insertCurrentWeather(currentWeather.data)
-
-        //Getting data from database
-        _currentWeather.postValue(
-            repository.getCurrentWeatherByLatAndLonFromRoom(
-                latitude.toString(),
-                longitude.toString()
-            )
-        )
-    }
-
-    private suspend fun getSixteenWeatherByCoordinates(
+    private suspend fun getCurrentWeatherByLocation(
         latitude: Long,
         longitude: Long,
         units: String
     ) {
+        // Get current weather from api by location
+        val currentWeather =
+            repository.getCurrentWeatherByLocationFromApi(latitude, longitude, units)
 
-        //Get sixteen days forecast from api by coordinates
-        val sixteenWeather =
-            repository.getSixteenDaysForecastLatLonFromApi(latitude, longitude, units)
+        // Assume this calling as last location
+        lastLocation.postValue(currentWeather.data[0].cityName)
 
-        //Save the latitude and longitude in the object so you can look for it in the database
-        sixteenWeather.lat = latitude.toString()
-        sixteenWeather.lon = longitude.toString()
+        // Insert units manually (Because it's not returned from the api)
+        currentWeather.data[0].units = units
+        currentWeather.data[0].isCurrentLocation = true
 
-        //Insert data to database
-        repository.insertSixteenWeather(sixteenWeather)
+        // Insert data to database
+        repository.insertCurrentWeatherToRoom(currentWeather.data)
 
-        //Getting data from database
-        _sixteenDaysForecast.postValue(
-            repository.getSixteenWeatherByLatAndLonFromRoom(
+        // Getting data from database
+        _currentWeather.postValue(
+            repository.getCurrentWeatherByLocationFromRoom(
                 latitude.toString(),
                 longitude.toString()
             )
         )
     }
 
-    private suspend fun getIsCurrentLocation(city: String): Boolean? {
-        return repository.getIsCurrentLocation(city)
+    private suspend fun getWeatherForecastByLocation(
+        latitude: Long,
+        longitude: Long,
+        units: String
+    ) {
+        // Get sixteen days forecast from api by coordinates
+        val sixteenWeather =
+            repository.getWeatherForecastByLocationFromApi(latitude, longitude, units)
+
+        // Save the latitude and longitude in the object so you can look for it in the database
+        sixteenWeather.lat = latitude.toString()
+        sixteenWeather.lon = longitude.toString()
+
+        // Insert data to database
+        repository.insertForecastWeatherToRoom(sixteenWeather)
+
+        // Getting data from database
+        _weatherForecast.postValue(
+            repository.getWeatherForecastByLocationFromRoom(
+                latitude.toString(),
+                longitude.toString()
+            )
+        )
     }
 
+    fun deleteWeatherLocation(cityName: String) = viewModelScope.launch(Dispatchers.IO) {
+        repository.deleteCurrentWeatherLocation(cityName)
+        repository.deleteForecastLocation(cityName)
+    }
+
+    // Getting weather from local database in case we couldn't fetch data
+    // from the network and we have a previous data there...
+    private fun getInfoFromRoom(city: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!isCitiesInRoomNull()) {
+                _currentWeather.postValue(
+                    repository.getCurrentWeatherByCityNameFromRoom(city)
+                )
+                _weatherForecast.postValue(
+                    repository.getWeatherForecastByCityNameFromRoom(city)
+                )
+            }
+        }
+    }
 }

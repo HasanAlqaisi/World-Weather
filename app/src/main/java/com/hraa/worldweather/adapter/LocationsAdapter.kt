@@ -64,7 +64,7 @@ class LocationsAdapter(private val listener: OnLocationClick) :
     }
 
     interface OnLocationClick {
-        fun onClick(position: Int?, cityName: String?)
+        fun onClick(position: Int?, cityName: String?, shouldDelete: Boolean)
     }
 
 }

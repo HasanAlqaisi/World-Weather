@@ -9,7 +9,6 @@ object CurrentWeatherClient {
     var currentWeatherApi: CurrentWeatherApi
 
     init {
-
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL_CURRENT)
             .addConverterFactory(GsonConverterFactory.create())

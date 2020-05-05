@@ -1,22 +1,22 @@
-package com.hraa.worldweather.api_sixteen_days
+package com.hraa.worldweather.api_forecast
 
 import com.hraa.worldweather.constants.API_KEY
-import com.hraa.worldweather.sixteen_weather_model.SixteenWeatherModel
+import com.hraa.worldweather.forecast_weather_model.ForecastWeatherModel
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface SixteenWeatherApi {
+interface ForecastApi {
 
     @GET("daily?key=$API_KEY")
-    suspend fun getSixteenDaysForecastLatLon(
+    suspend fun getWeatherForecastByLocation(
         @Query("lat") lat: Long,
         @Query("lon") lon: Long,
         @Query("units") units: String
-    ): SixteenWeatherModel
+    ): ForecastWeatherModel
 
     @GET("daily?key=$API_KEY")
-    suspend fun getSixteenDaysForecastCityName(
+    suspend fun getWeatherForecastByCityName(
         @Query("city") cityName: String,
         @Query("units") units: String
-    ): SixteenWeatherModel
+    ): ForecastWeatherModel
 }

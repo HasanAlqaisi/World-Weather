@@ -4,15 +4,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.hraa.worldweather.R
-import com.hraa.worldweather.sixteen_weather_model.Data
-import com.hraa.worldweather.sixteen_weather_model.SixteenWeatherModel
+import com.hraa.worldweather.forecast_weather_model.Data
+import com.hraa.worldweather.forecast_weather_model.ForecastWeatherModel
 
 class ForecastAdapter(private val listener: OnDayItemClick) :
     RecyclerView.Adapter<BaseViewHolder<*>>() {
 
     private var dataList: List<Data> = emptyList()
 
-    fun setData(data: SixteenWeatherModel) {
+    fun setData(data: ForecastWeatherModel) {
         dataList = data.data
         notifyDataSetChanged()
     }

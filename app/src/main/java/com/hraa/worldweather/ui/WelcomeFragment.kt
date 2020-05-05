@@ -4,12 +4,10 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,10 +25,7 @@ import com.hraa.worldweather.constants.*
 import com.hraa.worldweather.enums.WeatherResultState
 import com.hraa.worldweather.view_model.WeatherViewModel
 import kotlinx.android.synthetic.main.fragment_welcome.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class WelcomeFragment : Fragment(), TextWatcher {
 
@@ -50,25 +45,32 @@ class WelcomeFragment : Fragment(), TextWatcher {
     private lateinit var closeDialog: ImageView
 
     private lateinit var units: String
+    private lateinit var lastLocation: String
 
-    private var lastLocation: String = ""
     private var isDialogShowing = false
+    private var ifFirstUsedJob: Job = Job()
+    private var navigateJob1: Job = Job()
+    private var navigateJob2: Job = Job()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_welcome, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Getting last location and units from shared preferences
+        // And if they haven't created yet! get the default values
+        lastLocation = sharedPref?.getString(LAST_LOCATION_SHARED_PREF, "")!!
+        units = sharedPref?.getString(UNITS_SHARED_PREF, "M")!!
+
         if (savedInstanceState == null) {
-            //Check location permission Only in first launched
-            CoroutineScope(Dispatchers.IO).launch {
-                if (weatherViewModel.getAllCitiesAvailableFromRoomAsync().await().isNullOrEmpty()) {
+            // Check location permission Only if this is  first use of app
+            ifFirstUsedJob = CoroutineScope(Dispatchers.IO).launch {
+                if (weatherViewModel.isCitiesInRoomNull()) {
                     withContext(Dispatchers.Main) {
                         checkLocationPermission()
                     }
@@ -85,16 +87,9 @@ class WelcomeFragment : Fragment(), TextWatcher {
             } else {
                 dialog.dismiss()
             }
-
         }
 
-        //Get units and last location from shared preferences
-        // and if they haven't created yet.. get the default values!
-        units = sharedPref?.getString(UNITS_SHARED_PREF, "M")!!
-        lastLocation = sharedPref?.getString(LAST_LOCATION_SHARED_PREF, "")!!
-
         setDialog()
-
         observeWeatherState()
     }
 
@@ -132,59 +127,52 @@ class WelcomeFragment : Fragment(), TextWatcher {
     }
 
     private fun setDialog() {
-        //Set the dialog view
+        // Set the dialog view
         dialog.setContentView(R.layout.dialog_refused)
         // set that dialog as not cancelable
         dialog.setCancelable(false)
-        //Get views from inflated layout
+        // Get views from inflated layout
         okBtn = dialog.findViewById(R.id.okBtn_dialog)
         cityNameEditText = dialog.findViewById(R.id.city_edtxt_dialog)
         closeDialog = dialog.findViewById(R.id.close_dialog)
-        //Listen to text changes
+        // Listen to text changes
         cityNameEditText.addTextChangedListener(this)
 
         okBtn.setOnClickListener {
             okBtn.isEnabled = false
-            weatherViewModel.getWeatherByCityName(cityNameEditText.text.toString(), units)
+            val loc = cityNameEditText.text.toString()
+            weatherViewModel.getWeatherByCityName(loc, units)
+            // In case of internet went off (Save the location)
+            sharedPref?.edit()?.putString(LAST_LOCATION_SHARED_PREF, loc)?.apply()
         }
 
         closeDialog.setOnClickListener {
             dialog.dismiss()
             isDialogShowing = false
-            if (lastLocation.isEmpty()) {
-                enableLocationSnackBar(
-                    resources.getString(R.string.enable_location_permission),
-                    Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.fromParts(
-                            "package",
-                            requireActivity().applicationContext.packageName,
-                            null
-                        )
-                    )
-                )
-            }
         }
     }
 
     private fun observeWeatherState() {
         weatherViewModel.weatherResult.observe(viewLifecycleOwner, Observer { weatherState ->
-            Log.e("WelcomeFragment", "Weather result is $weatherState")
             weatherState?.let {
-                Log.e("WelcomeFragment", "weather state is NOT null")
                 when (weatherState.name) {
                     WeatherResultState.FINISHED.toString() -> {
-                        Log.e("WelcomeFragment", "Finished!")
-                        findNavController().navigate(R.id.action_welcomeFragment_to_mainFragment)
                         if (dialog.isShowing) {
                             dialog.dismiss()
                             isDialogShowing = false
                         }
+                        findNavController().navigate(R.id.action_welcomeFragment_to_mainFragment)
                     }
 
                     WeatherResultState.NO_INTERNET.toString() -> {
                         okBtn.isEnabled = true
-                        this.requireContext().toast(resources.getString(R.string.error_no_internet))
+                        navigateJob1 = CoroutineScope(Dispatchers.IO).launch {
+                            if (!weatherViewModel.isCitiesInRoomNull()) {
+                                withContext(Dispatchers.Main) {
+                                    findNavController().navigate(R.id.action_welcomeFragment_to_mainFragment)
+                                }
+                            }
+                        }
                     }
 
                     WeatherResultState.WRONG_CITY_NAME.toString() -> {
@@ -192,7 +180,13 @@ class WelcomeFragment : Fragment(), TextWatcher {
                     }
 
                     WeatherResultState.EXCEPTION.toString() -> {
-                        this.requireContext().toast(resources.getString(R.string.error_general))
+                        navigateJob2 = CoroutineScope(Dispatchers.IO).launch {
+                            if (!weatherViewModel.isCitiesInRoomNull()) {
+                                withContext(Dispatchers.Main) {
+                                    findNavController().navigate(R.id.action_welcomeFragment_to_mainFragment)
+                                }
+                            }
+                        }
                     }
 
                     WeatherResultState.LOCATION_IS_OFF.toString() -> {
@@ -208,12 +202,11 @@ class WelcomeFragment : Fragment(), TextWatcher {
     }
 
     private fun enableLocationSnackBar(message: String, intent: Intent) {
-        Snackbar.make(
-            welcome_parent, message, Snackbar.LENGTH_INDEFINITE
-        ).setAction(resources.getString(R.string.settings)) {
-            startActivity(intent)
-            requireActivity().finish()
-        }.show()
+        Snackbar.make(welcome_parent, message, Snackbar.LENGTH_INDEFINITE)
+            .setAction(resources.getString(R.string.settings)) {
+                startActivity(intent)
+                requireActivity().finish()
+            }.show()
     }
 
     override fun onRequestPermissionsResult(
@@ -229,16 +222,8 @@ class WelcomeFragment : Fragment(), TextWatcher {
                     // Permission is accepted
                     weatherViewModel.getWeatherByLocation(units)
                 } else {
-                    if (shouldShowRequestPermissionRationale(
-                            LOCATION_PERMISSION
-                        )
-                    ) {
-                        // Permission denied once
-                        dialog.show()
-                    } else {
-                        // Permission denied always
-                        dialog.show()
-                    }
+                    // Permission denied
+                    dialog.show()
                 }
             }
         }
@@ -254,6 +239,13 @@ class WelcomeFragment : Fragment(), TextWatcher {
         s?.let {
             okBtn.isEnabled = it.isNotEmpty()
         }
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        ifFirstUsedJob.cancel()
+        navigateJob1.cancel()
+        navigateJob2.cancel()
+        weatherViewModel.weatherResult.removeObservers(viewLifecycleOwner)
     }
 }

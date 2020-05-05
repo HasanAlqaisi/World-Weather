@@ -1,53 +1,62 @@
 package com.hraa.worldweather.repo
 
 import com.hraa.worldweather.api_current_weather.CurrentWeatherClient
-import com.hraa.worldweather.api_sixteen_days.SixteenWeatherClient
+import com.hraa.worldweather.api_forecast.SixteenWeatherClient
 import com.hraa.worldweather.current_weather_model.Data
 import com.hraa.worldweather.room.WeatherDao
-import com.hraa.worldweather.sixteen_weather_model.SixteenWeatherModel
+import com.hraa.worldweather.forecast_weather_model.ForecastWeatherModel
 
 class Repository(private val weatherDao: WeatherDao) {
 
-    private val apiForecast = SixteenWeatherClient.sixteenWeatherApi
+    private val apiForecast = SixteenWeatherClient.forecastApi
 
     private val apiCurrent = CurrentWeatherClient.currentWeatherApi
 
-    suspend fun getIsCurrentLocation(cityName: String) = weatherDao.getIsCurrentLocation(cityName)
+    suspend fun isCurrentLocation(cityName: String) = weatherDao.isCurrentLocation(cityName)
 
-    suspend fun getSixteenDaysForecastLatLonFromApi(latitude: Long, longitude: Long, units: String) =
-        apiForecast.getSixteenDaysForecastLatLon(latitude, longitude, units)
+    suspend fun getWeatherForecastByLocationFromApi(
+        latitude: Long,
+        longitude: Long,
+        units: String
+    ) =
+        apiForecast.getWeatherForecastByLocation(latitude, longitude, units)
 
-    suspend fun getSixteenDaysForecastCityNameFromApi(cityName: String, units: String) =
-        apiForecast.getSixteenDaysForecastCityName(cityName, units)
+    suspend fun getWeatherForecastByCityNameFromApi(cityName: String, units: String) =
+        apiForecast.getWeatherForecastByCityName(cityName, units)
 
-    suspend fun getCurrentWeatherLatLonFromApi(latitude: Long, longitude: Long, units: String) =
-        apiCurrent.getCurrentWeatherLatLon(latitude, longitude, units)
+    suspend fun getCurrentWeatherByLocationFromApi(latitude: Long, longitude: Long, units: String) =
+        apiCurrent.getCurrentWeatherByLocation(latitude, longitude, units)
 
-    suspend fun getCurrentWeatherCityNameFromApi(cityName: String, units: String) =
-        apiCurrent.getCurrentWeatherCityName(cityName, units)
+    suspend fun getCurrentWeatherByCityNameFromApi(cityName: String, units: String) =
+        apiCurrent.getCurrentWeatherByCityName(cityName, units)
 
     suspend fun getCurrentWeatherByCityNameFromRoom(cityName: String) =
         weatherDao.getCurrentWeatherByCityName(cityName)
 
-    suspend fun getCurrentWeatherByLatAndLonFromRoom(latitude: String, longitude: String) =
-        weatherDao.getCurrentWeatherByLatAndLon(latitude, longitude)
+    suspend fun getCurrentWeatherByLocationFromRoom(latitude: String, longitude: String) =
+        weatherDao.getCurrentWeatherByLocation(latitude, longitude)
 
-    suspend fun getSixteenWeatherByCityNameFromRoom(cityName: String) =
-        weatherDao.getSixteenWeatherByCityName(cityName)
+    suspend fun getWeatherForecastByCityNameFromRoom(cityName: String) =
+        weatherDao.getWeatherForecastByCityName(cityName)
 
-    suspend fun getSixteenWeatherByLatAndLonFromRoom(latitude: String, longitude: String) =
-        weatherDao.getSixteenWeatherByLatAndLon(latitude, longitude)
+    suspend fun getWeatherForecastByLocationFromRoom(latitude: String, longitude: String) =
+        weatherDao.getWeatherForecastByLocation(latitude, longitude)
 
-    suspend fun insertCurrentWeather(currentWeather: List<Data>) {
+    suspend fun insertCurrentWeatherToRoom(currentWeather: List<Data>) {
         weatherDao.insertCurrentWeather(currentWeather)
     }
 
-    suspend fun insertSixteenWeather(sixteenWeatherModel: SixteenWeatherModel) {
-        weatherDao.insertSixteenWeather(sixteenWeatherModel)
+    suspend fun insertForecastWeatherToRoom(forecastWeatherModel: ForecastWeatherModel) {
+        weatherDao.insertForecastWeather(forecastWeatherModel)
     }
 
-    suspend fun getAllCitiesAvailable() = weatherDao.getAllCitiesAvailable()
+    suspend fun getAllLocationsFromRoom() = weatherDao.getAllLocations()
 
-    suspend fun getAllLocations() = weatherDao.getAllLocations()
+    suspend fun deleteCurrentWeatherLocation(cityName: String) {
+        weatherDao.deleteCurrentWeatherLocation(cityName)
+    }
 
+    suspend fun deleteForecastLocation(cityName: String) {
+        weatherDao.deleteForecastLocation(cityName)
+    }
 }

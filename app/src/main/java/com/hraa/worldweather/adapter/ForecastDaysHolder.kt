@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.hraa.worldweather.R
-import com.hraa.worldweather.sixteen_weather_model.Data
+import com.hraa.worldweather.forecast_weather_model.Data
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,9 +26,9 @@ class ForecastDaysHolder(itemView: View) : BaseViewHolder<Data>(itemView) {
         }
 
         day.text = whatDay(getDayFromDate(item.datetime))
-        maxTemp.text = item.maxTemp.toInt().toString()
-        minTemp.text = item.minTemp.toInt().toString()
-        descriptionWeek.text = item.weather.description
+        maxTemp.text = itemView.resources.getString(R.string.temp, item.maxTemp?.toInt())
+        minTemp.text = itemView.resources.getString(R.string.temp, item.minTemp?.toInt())
+        descriptionWeek.text = item.weather?.description
         dateWeek.text = getFormattedDate(item.datetime)
 
         setWeatherImage(item, imageWeek)
@@ -42,7 +42,7 @@ class ForecastDaysHolder(itemView: View) : BaseViewHolder<Data>(itemView) {
     }
 
     private fun setWeatherImage(item: Data, imageWeek: ImageView) {
-        when (item.weather.icon) {
+        when (item.weather?.icon) {
             "a01d" -> imageWeek.setImageResource(R.drawable.a01d)
             "a01n" -> imageWeek.setImageResource(R.drawable.a01n)
             "a02d" -> imageWeek.setImageResource(R.drawable.a02d)
@@ -111,15 +111,15 @@ class ForecastDaysHolder(itemView: View) : BaseViewHolder<Data>(itemView) {
     }
 
     @SuppressLint("SimpleDateFormat")
-    fun getFormattedDate(date: String): String {
-        val formattedDate = SimpleDateFormat("yyyy-MM-dd").parse(date)
+    fun getFormattedDate(date: String?): String {
+        val formattedDate = SimpleDateFormat("yyyy-MM-dd").parse(date!!)
         return SimpleDateFormat("d/MM").format(formattedDate ?: "")
     }
 
     @SuppressLint("SimpleDateFormat")
-    fun getDayFromDate(date: String): Int {
+    fun getDayFromDate(date: String?): Int {
         val calender = Calendar.getInstance()
-        calender.time = SimpleDateFormat("yyyy-MM-dd").parse(date)!!
+        calender.time = SimpleDateFormat("yyyy-MM-dd").parse(date!!)!!
         return calender.get(Calendar.DAY_OF_WEEK)
     }
 

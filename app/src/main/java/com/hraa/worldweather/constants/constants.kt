@@ -3,11 +3,8 @@ package com.hraa.worldweather.constants
 import android.Manifest
 import android.content.Context
 import android.widget.Toast
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 
-const val API_KEY = "c27ebc2016bc4d07b2989aec94942893"
+const val API_KEY = "7d83901c0acb497382e26306543dc8a5"
 
 const val BASE_URL_FORECAST = "https://api.weatherbit.io/v2.0/forecast/"
 const val BASE_URL_CURRENT = "https://api.weatherbit.io/v2.0/"
@@ -23,16 +20,17 @@ const val UNITS_SHARED_PREF = "units"
 const val LAST_LOCATION_SHARED_PREF = "lastLocation"
 
 const val IS_DIALOG_SHOWING_KEY = "isDialogShowing"
-
-fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
-    observe(lifecycleOwner, object : Observer<T> {
-        override fun onChanged(t: T?) {
-            observer.onChanged(t)
-            removeObserver(this)
-        }
-    })
-}
+const val IS_SWITCH_CHECKED = "isSwitchChecked"
 
 fun Context.toast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 }
+
+//fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
+//    observe(lifecycleOwner, object : Observer<T> {
+//        override fun onChanged(t: T?) {
+//            observer.onChanged(t)
+//            removeObserver(this)
+//        }
+//    })
+//}

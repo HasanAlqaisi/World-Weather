@@ -22,28 +22,20 @@
             android:layout_margin="8dp"
             android:src="@drawable/ic_close" />
 
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_refused_dailog_vec" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:gravity="center"
             android:text="@string/location_not_specified"
-            android:textSize="20dp"
-            android:theme="@style/WhiteBoldTextView" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:textSize="19dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_location_not_specified" />
-
-        <TextView
-            android:layout_width="wrap_content"
-
-            android:layout_height="wrap_content"
-            android:text="@string/instead_enter_city"
-            android:textSize="20dp"
             android:theme="@style/WhiteNormalTextView" />
 
         <EditText
@@ -52,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:background="@drawable/city_edit_text"
-            android:hint="@string/ex_baghdad"
+            android:hint="@string/enter_city"
             android:textColor="@android:color/white"
             android:textColorHint="@color/little_grey" />
 

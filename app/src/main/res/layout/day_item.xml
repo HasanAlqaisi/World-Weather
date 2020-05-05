@@ -24,21 +24,11 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:text="O"
-            android:textColor="@android:color/white"
-            android:textSize="10dp"
-            app:layout_constraintStart_toEndOf="@+id/max_temp"
-            app:layout_constraintTop_toTopOf="@+id/max_temp" />
-
-        <TextView
             android:id="@+id/max_temp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="22"
+            android:layout_marginEnd="8dp"
+            android:text="22°"
             android:textColor="@android:color/white"
             android:textSize="20dp"
             app:layout_constraintBaseline_toBaselineOf="@+id/description_week"
@@ -56,21 +46,11 @@
             app:layout_constraintTop_toTopOf="@+id/max_temp" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:text="O"
-            android:textColor="@android:color/white"
-            android:textSize="10dp"
-            app:layout_constraintStart_toEndOf="@+id/min_temp"
-            app:layout_constraintTop_toTopOf="@+id/min_temp" />
-
-        <TextView
             android:id="@+id/min_temp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="10"
+            android:text="10°"
             android:textColor="@android:color/white"
             android:textSize="20dp"
             app:layout_constraintBaseline_toBaselineOf="@+id/max_temp"

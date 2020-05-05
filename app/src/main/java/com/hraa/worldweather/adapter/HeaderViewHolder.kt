@@ -17,7 +17,7 @@ class HeaderViewHolder(itemView: View) : BaseViewHolder<HeaderLocation>(itemView
             detectLoc.visibility = View.GONE
         }
         detectLoc.setOnClickListener {
-            (listener as LocationsAdapter.OnLocationClick).onClick(position!!, null)
+            (listener as LocationsAdapter.OnLocationClick).onClick(position!!, null, false)
         }
     }
 }

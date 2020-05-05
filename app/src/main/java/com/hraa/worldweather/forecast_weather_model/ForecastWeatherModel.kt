@@ -1,4 +1,4 @@
-package com.hraa.worldweather.sixteen_weather_model
+package com.hraa.worldweather.forecast_weather_model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -9,7 +9,7 @@ import com.google.gson.reflect.TypeToken
 import com.hraa.worldweather.constants.SIXTEEN_WEATHER_TABLE
 
 @Entity(tableName = SIXTEEN_WEATHER_TABLE)
-data class SixteenWeatherModel(
+data class ForecastWeatherModel(
     @SerializedName("city_name")
     @PrimaryKey val cityName: String,
     var lat: String,
